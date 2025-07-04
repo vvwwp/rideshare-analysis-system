@@ -1,0 +1,47 @@
+MIT License
+
+Copyright (c) 2025 Wei Wenpeng, Wuhan University
+
+IMPORTANT NOTICE FOR COMMERCIAL USE:
+While this code is open source under MIT License for academic research and 
+non-commercial use, the core theoretical innovation "Balance Factor Dual-Layer 
+Weight System" is protected by intellectual property rights. Commercial use 
+of this system requires a separate commercial license agreement. Please contact 
+the author for commercial licensing terms.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction for NON-COMMERCIAL purposes, including 
+without limitation the rights to use, copy, modify, merge, publish, distribute, 
+sublicense, and/or sell copies of the Software for academic and research purposes, 
+and to permit persons to whom the Software is furnished to do so, subject to 
+the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+For any COMMERCIAL USE, including but not limited to:
+- Integration into commercial automotive products
+- Commercial ride-sharing service evaluation
+- Commercial consulting services
+- Sale of derivative commercial products
+
+A separate commercial license is required. Contact: [GitHub Issues for licensing inquiries]
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+ACADEMIC CITATION REQUIREMENT:
+If you use this software in academic research, please cite:
+Wei Wenpeng. "Balance Factor Dual-Layer Weight System for Multi-Criteria 
+Ride Experience Evaluation." Wuhan University, 2025.
+
+CONTRIBUTOR RIGHTS:
+Contributors who extend new indicators retain intellectual property rights 
+for their specific contributions as defined in the project's contributor 
+agreement. 
