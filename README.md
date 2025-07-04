@@ -1,201 +1,281 @@
-# 🚗 乘车体验对比分析系统
+# 🚗 Ride Experience Comparison Analysis System
 
-## 基于平衡因子双层权重系统的创新研究
+## Revolutionary Balance Factor Dual-Layer Weight System
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
-[![License](https://img.shields.io/badge/License-Academic-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Complete-success.svg)](https://github.com)
 
-> **传统车 vs 自动驾驶车的客观对比分析工具**  
-> 基于手机传感器数据，运用国际标准评价体系
+> **Objective comparative analysis tool for Traditional vs Autonomous vehicles**  
+> Based on smartphone sensor data and international evaluation standards
 
 ---
 
-## 🏆 核心创新
+## 🏆 Core Innovation
 
-### 💡 理论突破
-- **发现问题**：首次识别熵权重法中的隐性权重偏差
-- **提出理论**：创建平衡因子双层权重系统
-- **验证稳健性**：三种算法交叉验证，结果高度一致
+### 💡 Theoretical Breakthrough
+- **Problem Discovery**: First identification of hidden weight bias in entropy weight method
+- **Theory Proposal**: Revolutionary Balance Factor Dual-Layer Weight System
+- **Robustness Validation**: Three-algorithm cross-validation with highly consistent results
 
-### 🔬 技术特色
-- **多传感器融合**：加速度计、陀螺仪、GPS、麦克风
-- **国际标准基准**：ISO 2631-1、WHO 2018、Continental研究
-- **完整GUI系统**：1400+行Python代码，现代化界面
-- **客观化评价**：从主观赋分到数学计算的方法论演进
+### 🔬 Technical Features
+- **Multi-sensor Fusion**: Accelerometer, Gyroscope, GPS, Microphone
+- **International Standards**: ISO 2631-1, WHO 2018, Continental Research
+- **Complete GUI System**: 1400+ lines Python code with modern interface
+- **Objective Evaluation**: Evolution from subjective scoring to mathematical computation
 
 ---
 
-## ⚡ 快速开始
+## ⚡ Quick Start
 
-### 环境要求
+### Requirements
 ```bash
 Python 3.8+
 pip install pandas numpy scipy matplotlib tkinter librosa
 ```
 
-### 运行程序
+### Run Application
 ```bash
-# 推荐使用最稳健的中位数版本
+# Recommended: Most robust median version
 python GUI分析器-中位数版.py
 
-# 或尝试其他版本
+# Alternative versions
 python GUI分析器-积分均值版.py
 python GUI分析器-主观赋分版.py
 ```
 
-### 数据准备
-1. 使用Sensor Logger应用收集数据
-2. 按照命名规范：`名称-车型(0/1)-价格`
-3. 确保包含传感器文件：`Accelerometer.csv`、`Gyroscope.csv`、`Location.csv`、`Microphone.csv`
+### Data Preparation
+1. Use Sensor Logger app to collect data
+2. Follow naming convention: `name-vehicleType(0/1)-price`
+3. Ensure sensor files: `Accelerometer.csv`, `Gyroscope.csv`, `Location.csv`, `Microphone.csv`
 
 ---
 
-## 📊 系统架构
+## 📊 System Architecture
 
-### 🎯 五大核心指标
-| 指标 | 基准标准 | 评价范围 |
-|------|----------|----------|
-| **平顺性** | ISO 2631-1 | RMS加速度 |
-| **稳定性** | Continental研究 | 角速度变化 |
-| **噪声水平** | WHO 2018 | 环境噪声指南 |
-| **时间效率** | 武汉市数据 | 平均行驶速度 |
-| **价格性价比** | 市场调研 | 每公里成本 |
+### 🎯 Five Core Indicators
+| Indicator | Standard | Evaluation Range |
+|-----------|----------|------------------|
+| **Smoothness** | ISO 2631-1 | RMS Acceleration |
+| **Stability** | Continental Research | Angular Velocity Variation |
+| **Noise Level** | WHO 2018 | Environmental Noise Guidelines |
+| **Time Efficiency** | Wuhan City Data | Average Travel Speed |
+| **Price Performance** | Market Research | Cost per Kilometer |
 
-### ⚖️ 双层权重系统
+### ⚖️ Dual-Layer Weight System
 ```
-第一层：传统熵权重 → 基于数据分布的客观权重
-第二层：平衡因子修正 → 消除评分函数敏感度偏差
-最终权重 = 平衡因子 × 熵权重（归一化）
-```
-
----
-
-## 🔬 算法演进历程
-
-### v1.0 主观赋分版
-- **核心思想**：基于主观经验设定敏感度修正参数
-- **特点**：快速原型，为后续算法验证提供基准
-- **Git哈希**：`7eca260`
-
-### v2.0 积分均值版
-- **核心思想**：通过数值积分计算评分函数的严格均值
-- **特点**：数学严谨，基于scipy.integrate.quad
-- **Git哈希**：`f15a015`
-
-### v2.1 中位数版（推荐）
-- **核心思想**：求解50分等值线，计算中位数输入值
-- **特点**：最稳健，不受极端值影响
-- **Git哈希**：`fd18331`
-
-### 🎯 重大发现
-**三个版本的结果高度一致！** 这证明了：
-- ✅ 算法的内在稳健性
-- ✅ 评分函数设计的科学性  
-- ✅ 方法论演进的正确性
-
----
-
-## 📈 主要功能展示
-
-### 🖥️ 现代化GUI界面
-- Material Design风格
-- 双模式分析：单日对比 / 多日综合
-- 实时数据扫描和配对
-
-### 📊 数据可视化
-- 综合对比柱状图
-- 权重分析雷达图
-- 得分分布箱线图
-- 趋势分析折线图
-- 详细指标对比
-
-### 🔍 深度分析
-- 传感器数据同步
-- 重力分量去除
-- 异常值处理
-- 距离精确计算
-
----
-
-## 📚 学术价值
-
-### 理论贡献
-- **填补理论空白**：首次系统性解决多指标评价中的权重偏差
-- **方法论创新**：建立从主观到客观的算法演进框架
-- **交叉验证机制**：多路径验证确保结果可靠性
-
-### 应用价值
-- **消费者决策**：科学的出行方式选择依据
-- **行业评估**：自动驾驶服务质量标准化评价
-- **政策支持**：为交通管理部门提供数据支撑
-- **学术推广**：适用于所有多指标决策问题
-
----
-
-## 🤝 人机协作声明
-
-本项目采用透明的人机协作模式：
-
-**人类贡献（魏文鹏）**：
-- 🧠 核心理论创新和问题发现
-- 🎯 系统设计和应用场景构思
-- 📊 评价指标选择和科学标准引入
-- ✨ 算法演进思路和验证方法论
-
-**AI贡献（Claude-3.5-Sonnet）**：
-- 🧮 数学公式推导和算法实现
-- 💻 1400+行Python代码编写
-- 📖 技术文档和学术论述
-- 🔧 工程优化和界面开发
-
-### 学术诚信
-- **核心理论**：魏文鹏完全原创
-- **技术实现**：人机协作完成
-- **透明披露**：如实反映协作过程
-
----
-
-## 📁 项目结构
-
-```
-乘车体验对比分析系统/
-├── README.md                    # 项目主页
-├── GUI分析器-主观赋分版.py       # v1.0 主观版算法
-├── GUI分析器-积分均值版.py       # v2.0 积分均值算法  
-├── GUI分析器-中位数版.py         # v2.1 中位数算法（推荐）
-├── 学术支持.md                  # 理论基础和文献支撑
-├── 技术文档.md                  # 详细技术实现文档
-├── 慢-0-7/                     # 传统车数据样本
-├── 慢-1-30/                    # 自动驾驶车数据样本
-└── requirements.txt            # 依赖包清单
+Layer 1: Traditional Entropy Weight → Objective weight based on data distribution
+Layer 2: Balance Factor Correction → Eliminate scoring function sensitivity bias
+Final Weight = Balance Factor × Entropy Weight (normalized)
 ```
 
 ---
 
-## 🔗 相关链接
+## 🔬 Algorithm Evolution Journey
 
-- **学术支持文档**：[学术支持.md](学术支持.md)
-- **技术实现细节**：[技术文档.md](技术文档.md)
-- **Git提交历史**：完整的算法演进记录
+### v1.0 Subjective Scoring Version
+- **Core Idea**: Sensitivity correction parameters based on subjective experience
+- **Features**: Rapid prototype, provides baseline for subsequent algorithm validation
+- **Git Hash**: `7eca260`
+
+### v2.0 Integral Mean Version
+- **Core Idea**: Rigorous mean calculation through numerical integration
+- **Features**: Mathematically rigorous, based on scipy.integrate.quad
+- **Git Hash**: `f15a015`
+
+### v2.1 Median Version (Recommended)
+- **Core Idea**: Solve 50-point contour lines, calculate median input values
+- **Features**: Most robust, unaffected by extreme values
+- **Git Hash**: `fd18331`
+
+### 🎯 Major Discovery
+**Results from three versions are highly consistent!** This proves:
+- ✅ Inherent algorithm robustness
+- ✅ Scientific validity of scoring function design
+- ✅ Correctness of methodological evolution
 
 ---
 
-## 📧 联系方式
+## 🌟 Key Features
 
-**项目负责人**：武汉大学 魏文鹏  
-**项目性质**：本科生原创研究  
-**完成时间**：2025年6月30日  
+### 🖥️ Modern GUI Interface
+- Material Design style with dynamic indicator selection panel
+- Dual analysis modes: Single-day comparison / Multi-day comprehensive
+- Real-time data scanning and pairing
+
+### 📊 Advanced Data Visualization
+- Comprehensive comparison bar charts
+- Weight analysis radar charts
+- Score distribution box plots
+- Trend analysis line charts
+- Detailed indicator comparisons
+
+### 🔍 Deep Analysis Capabilities
+- Sensor data synchronization
+- Gravity component removal
+- Outlier handling
+- Precise distance calculation
 
 ---
 
-## 📜 版权声明
+## 📚 Academic Value
 
-- **理论创新**：平衡因子双层权重系统为完全原创算法
-- **知识产权**：受知识产权保护，请在引用时注明出处
-- **开源精神**：代码开放，促进学术交流与发展
+### Theoretical Contributions
+- **Theory Gap Filling**: First systematic solution to weight bias in multi-indicator evaluation
+- **Methodological Innovation**: Established evolution framework from subjective to objective algorithms
+- **Cross-validation Mechanism**: Multi-path validation ensures result reliability
+
+### Practical Applications
+- **Consumer Decision Making**: Scientific basis for travel mode selection
+- **Industry Assessment**: Standardized quality evaluation for autonomous driving services
+- **Policy Support**: Data foundation for transportation management departments
+- **Academic Promotion**: Applicable to all multi-indicator decision problems
+
+### Scientific Foundation
+- **ISO 2631-1**: Mechanical vibration and shock evaluation for human exposure
+- **WHO Guidelines 2018**: Environmental noise guidelines for European region
+- **Continental Research**: Vehicle dynamics and stability analysis
+- **Entropy Weight Theory**: Information theory application in multi-criteria decision making
 
 ---
 
-*"通过科学的方法，为每一次出行选择提供客观依据。"*  
-*"人机协作，让理论创新插上技术的翅膀。"* 
+## 🌟 Welcome Contributors
+
+### 💡 Indicator Extension Invitation
+
+We warmly welcome researchers and developers interested in ride experience evaluation to extend new evaluation indicators!
+
+**Current Indicator System**:
+- ✅ Smoothness (ISO 2631-1)
+- ✅ Stability (Continental Research)
+- ✅ Noise Level (WHO 2018)
+- ✅ Time Efficiency (Wuhan City Data)
+- ✅ Price Performance (Market Research)
+
+**Expected Extension Indicators**:
+- 🛋️ **Comfort Index** - Seat, air conditioning, space comprehensive comfort
+- 🛡️ **Safety Index** - Driving behavior, emergency handling capability
+- 🌱 **Environmental Index** - Carbon emission, energy efficiency assessment
+- 🎯 **Personalization Index** - User preference adaptability
+- 📱 **Intelligence Index** - Human-machine interaction experience
+- 🌐 **Connectivity Index** - Information service quality
+
+### 🏆 Contributor Recognition
+
+**Code Contributors**:
+```
+Format: Extend new indicators + Co-author after Wei Wenpeng
+Example: Wei Wenpeng, Zhang San (Comfort Index), Li Si (Safety Index)
+```
+
+**Recognition Methods**:
+- 📝 README.md contributor list
+- 🎓 Academic paper co-authorship opportunities
+- 💼 Priority cooperation rights in commercialization projects
+- 🏅 Open source community reputation and influence
+
+### 💰 Revenue Sharing
+
+**Open Source Part**:
+- Permanently free and open source
+- Available for academic research by all
+- Contributors enjoy code usage rights
+
+**Commercial Revenue**:
+- **Core Theory** (Balance Factor System): Wei Wenpeng retains primary revenue rights
+- **Indicator Extensions**: Contributors enjoy shared revenue rights for corresponding indicators
+- **Specific Proportions**: Negotiated based on contribution, formal agreements signed
+
+**Legal Protection**:
+- Adopts **MIT + Commercial Supplement Agreement** dual license
+- Open source usage: MIT License
+- Commercial usage: Requires additional commercial license
+- Contributors automatically receive intellectual property protection for their contributions
+
+### 🔧 How to Participate
+
+1. **Fork Project** - Create your branch
+2. **Extend Indicators** - Add new indicators following existing framework
+3. **Submit PR** - Detailed explanation of scientific basis for new indicators
+4. **Sign Agreement** - Clarify contribution content and revenue sharing
+5. **Co-authorship** - Receive due recognition in the project
+
+### 📋 Technical Requirements
+
+- 🔬 **Scientific Basis**: New indicators need academic literature or industry standard support
+- 📊 **Data Compatibility**: Adapt to existing sensor data formats
+- 🧮 **Algorithm Integration**: Integrate into balance factor weight system
+- 📖 **Complete Documentation**: Provide detailed implementation instructions
+
+**Contact**: Welcome to discuss collaboration through GitHub Issues
+
+---
+
+## 🤝 Human-AI Collaboration Statement
+
+This project adopts a transparent human-AI collaboration model:
+
+**Human Contributions (Wei Wenpeng)**:
+- 🧠 Core theoretical innovation and problem discovery
+- 🎯 System design and application scenario conception
+- 📊 Evaluation indicator selection and scientific standard introduction
+- ✨ Algorithm evolution thinking and validation methodology
+
+**AI Contributions (Claude-3.5-Sonnet)**:
+- 🧮 Mathematical formula derivation and algorithm implementation
+- 💻 1400+ lines Python code development
+- 📖 Technical documentation and academic exposition
+- 🔧 Engineering optimization and interface development
+
+### Academic Integrity
+- **Core Theory**: Wei Wenpeng's original work
+- **Technical Implementation**: Completed through human-AI collaboration
+- **Transparent Disclosure**: Truthfully reflects the collaboration process
+
+---
+
+## 📁 Project Structure
+
+```
+Ride-Experience-Analysis-System/
+├── README.md                          # Project homepage
+├── TECHNICAL.md                       # Detailed technical documentation
+├── GUI分析器-主观赋分版.py              # v1.0 Subjective scoring algorithm
+├── GUI分析器-积分均值版.py              # v2.0 Integral mean algorithm
+├── GUI分析器-中位数版.py                # v2.1 Median algorithm (Recommended)
+├── test-0-13/                         # Traditional vehicle data sample
+├── test-1-8/                          # Traditional vehicle data sample
+├── test0-0-7/                         # Autonomous vehicle data sample
+├── test0-1-30/                        # Autonomous vehicle data sample
+└── Git版本记录_2025-06-30.txt          # Complete commit history
+```
+
+---
+
+## 🔗 Related Links
+
+- **Technical Documentation**: [TECHNICAL.md](TECHNICAL.md)
+- **Git Commit History**: [Git版本记录_2025-06-30.txt](Git版本记录_2025-06-30.txt)
+
+---
+
+## 📧 Contact Information
+
+**Project Leader**: Wei Wenpeng, Wuhan University  
+**Project Nature**: Undergraduate Original Research  
+**Completion Date**: June 30, 2025  
+**Collaboration**: Welcome contact through GitHub Issues
+
+---
+
+## 📜 Copyright Statement
+
+- **Theoretical Innovation**: Balance Factor Dual-Layer Weight System is completely original algorithm
+- **Intellectual Property**: Protected by intellectual property rights, please cite when referencing
+- **Open Source Spirit**: Code open, promotes academic exchange and development
+- **Contributor Rights**: All contributors enjoy corresponding intellectual property protection
+
+---
+
+*"Through scientific methods, provide objective basis for every travel choice."*  
+*"Open collaboration, making innovative achievements benefit more people."* 

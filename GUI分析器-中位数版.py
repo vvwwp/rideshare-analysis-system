@@ -356,12 +356,57 @@ class 数据分析引擎:
             'unit': '元/km'
         }
     
-    def get_score_vector(self):
-        """获取得分向量（用于多样本分析）"""
-        indicators = ['平顺性', '稳定性', '噪声水平', '时间效率']
-        if '价格性价比' in self.results:
-            indicators.append('价格性价比')
-        return [self.results[ind]['score'] for ind in indicators]
+    def get_score_vector(self, selected_indicators=None):
+        """获取得分向量，支持选择性指标计算"""
+        # 如果没有指定选择的指标，使用原来的逻辑以保持向后兼容性
+        if selected_indicators is None:
+            # 原来的逻辑 - 保持完全兼容
+            indicators = ['平顺性', '稳定性', '噪声水平', '时间效率']
+            if '价格性价比' in self.results:
+                indicators.append('价格性价比')
+            return [self.results[ind]['score'] for ind in indicators]
+        
+        # 新的逻辑 - 仅当明确传递了selected_indicators时使用
+        indicator_mapping = {
+            'smoothness': '平顺性',
+            'stability': '稳定性', 
+            'noise': '噪声水平',
+            'efficiency': '时间效率',
+            'price': '价格性价比'
+        }
+        
+        scores = []
+        indicator_names = []
+        
+        # 根据选择的指标计算分数
+        for indicator in selected_indicators:
+            if indicator == 'smoothness' and '平顺性' in self.results:
+                score_data = self.results['平顺性']
+                actual_score = score_data['score'] if isinstance(score_data, dict) else score_data
+                scores.append(actual_score)
+                indicator_names.append('平顺性')
+            elif indicator == 'stability' and '稳定性' in self.results:
+                score_data = self.results['稳定性']
+                actual_score = score_data['score'] if isinstance(score_data, dict) else score_data
+                scores.append(actual_score)
+                indicator_names.append('稳定性')
+            elif indicator == 'noise' and '噪声水平' in self.results:
+                score_data = self.results['噪声水平']
+                actual_score = score_data['score'] if isinstance(score_data, dict) else score_data
+                scores.append(actual_score)
+                indicator_names.append('噪声水平')
+            elif indicator == 'efficiency' and '时间效率' in self.results:
+                score_data = self.results['时间效率']
+                actual_score = score_data['score'] if isinstance(score_data, dict) else score_data
+                scores.append(actual_score)
+                indicator_names.append('时间效率')
+            elif indicator == 'price' and '价格性价比' in self.results:
+                score_data = self.results['价格性价比']
+                actual_score = score_data['score'] if isinstance(score_data, dict) else score_data
+                scores.append(actual_score)
+                indicator_names.append('价格性价比')
+        
+        return scores, indicator_names
 
 class 对比分析系统:
     """对比分析核心类"""
@@ -596,8 +641,8 @@ class 对比分析系统:
             'correction_effect': np.abs(final_weights - original_weights).sum()
         }
     
-    def single_group_comparison(self, group_name):
-        """单组对比分析"""
+    def single_group_comparison(self, group_name, selected_indicators=None):
+        """单组对比分析，支持动态指标选择"""
         if group_name not in self.paired_data:
             return None
             
@@ -610,12 +655,17 @@ class 对比分析系统:
         if not (trad_engine.load_and_analyze() and auto_engine.load_and_analyze()):
             return None
         
-        # 构建决策矩阵
-        trad_scores = trad_engine.get_score_vector()
-        auto_scores = auto_engine.get_score_vector()
+        # 构建决策矩阵（仅包含选中的指标）
+        trad_scores, trad_indicator_names = trad_engine.get_score_vector(selected_indicators)
+        auto_scores, auto_indicator_names = auto_engine.get_score_vector(selected_indicators)
+        
+        # 确保两个数据集的指标一致
+        if len(trad_scores) != len(auto_scores) or trad_indicator_names != auto_indicator_names:
+            return None
+        
         score_matrix = [trad_scores, auto_scores]
         
-        # 计算双层权重系统
+        # 计算双层权重系统（基于选中的指标数量）
         weight_info = self.calculate_entropy_weights(score_matrix)
         final_weights = weight_info['final_weights']
         
@@ -629,26 +679,30 @@ class 对比分析系统:
             'autonomous': {'engine': auto_engine, 'scores': auto_scores, 'final': auto_final},
             'weights': final_weights,
             'weight_info': weight_info,  # 包含详细的权重分析信息
-            'indicators': ['平顺性', '稳定性', '噪声水平', '时间效率', '价格性价比'][:len(final_weights)]
+            'indicators': trad_indicator_names,  # 使用实际的指标名称
+            'selected_indicators': selected_indicators  # 保存用户选择
         }
     
-    def multi_group_comparison(self, selected_groups=None):
-        """多组综合对比分析"""
+    def multi_group_comparison(self, selected_groups=None, selected_indicators=None):
+        """多组综合对比分析，支持动态指标选择"""
         if selected_groups is None:
             selected_groups = list(self.paired_data.keys())
         
         all_traditional_scores = []
         all_autonomous_scores = []
         valid_groups = []
+        indicator_names = None
         
         # 收集所有数据
         for group_name in selected_groups:
             if group_name in self.paired_data:
-                result = self.single_group_comparison(group_name)
+                result = self.single_group_comparison(group_name, selected_indicators)
                 if result:
                     all_traditional_scores.append(result['traditional']['scores'])
                     all_autonomous_scores.append(result['autonomous']['scores'])
                     valid_groups.append(group_name)
+                    if indicator_names is None:
+                        indicator_names = result['indicators']
         
         if len(valid_groups) < 2:
             return None
@@ -677,28 +731,98 @@ class 对比分析系统:
             'autonomous_scores': all_autonomous_scores,
             'weights': final_weights,
             'weight_info': weight_info,  # 包含详细的权重分析信息
-            'indicators': ['平顺性', '稳定性', '噪声水平', '时间效率', '价格性价比'][:len(final_weights)]
+            'indicators': indicator_names,  # 使用实际的指标名称
+            'selected_indicators': selected_indicators  # 保存用户选择
         }
 
 class 乘车体验对比分析GUI:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("🚗 乘车体验对比分析系统 v2.1 - 中位数版")
-        self.root.geometry("1600x1000")
+        self.root.geometry("1600x1100")  # 增加高度以容纳指标选择面板
         self.root.configure(bg='#f8f9fa')
         
         # 设置窗口居中
         self.center_window()
         
         self.analysis_system = 对比分析系统()
+        
+        # 初始化指标选择状态
+        self.indicator_vars = {}
+        self.init_indicators()
+        
         self.create_modern_ui()
         self.scan_data()
+    
+    def init_indicators(self):
+        """初始化指标选择变量"""
+        # 定义所有可用指标
+        self.available_indicators = {
+            'smoothness': {
+                'name': '🚗 平顺性',
+                'description': '基于ISO 2631-1标准的振动舒适性',
+                'icon': '📊',
+                'enabled': tk.BooleanVar(value=True)
+            },
+            'stability': {
+                'name': '⚖️ 稳定性', 
+                'description': '基于陀螺仪数据的驾驶稳定性',
+                'icon': '📈',
+                'enabled': tk.BooleanVar(value=True)
+            },
+            'noise': {
+                'name': '🔇 噪声水平',
+                'description': '基于WHO 2018标准的环境噪声',
+                'icon': '🎵',
+                'enabled': tk.BooleanVar(value=True)
+            },
+            'efficiency': {
+                'name': '⏱️ 时间效率',
+                'description': '基于GPS数据的行驶效率',
+                'icon': '🚀',
+                'enabled': tk.BooleanVar(value=True)
+            },
+            'price': {
+                'name': '💰 价格性价比',
+                'description': '基于市场调研的成本效益',
+                'icon': '💎',
+                'enabled': tk.BooleanVar(value=True)
+            }
+        }
         
+        # 为未来扩展预留指标槽位
+        self.future_indicators = {
+            'comfort': {
+                'name': '🛋️ 舒适度',
+                'description': '综合座椅、空调等舒适性指标',
+                'icon': '😌',
+                'enabled': tk.BooleanVar(value=False),
+                'available': False  # 暂未实现
+            },
+            'safety': {
+                'name': '🛡️ 安全性',
+                'description': '基于驾驶行为的安全性评估',
+                'icon': '🔒',
+                'enabled': tk.BooleanVar(value=False),
+                'available': False  # 暂未实现
+            },
+            'environment': {
+                'name': '🌱 环保性',
+                'description': '碳排放和能源效率评估',
+                'icon': '♻️',
+                'enabled': tk.BooleanVar(value=False),
+                'available': False  # 暂未实现
+            }
+        }
+        
+        # 合并所有指标
+        self.all_indicators = {**self.available_indicators, **self.future_indicators}
+    
     def center_window(self):
         """窗口居中显示"""
         self.root.update_idletasks()
         width = 1600
-        height = 1000
+        height = 1100  # 增加高度
         x = (self.root.winfo_screenwidth() // 2) - (width // 2)
         y = (self.root.winfo_screenheight() // 2) - (height // 2)
         self.root.geometry(f'{width}x{height}+{x}+{y}')
@@ -712,6 +836,9 @@ class 乘车体验对比分析GUI:
         # 顶部标题栏
         self.create_header(main_container)
         
+        # 指标选择面板
+        self.create_indicator_panel(main_container)
+        
         # 主要内容区域
         content_area = tk.Frame(main_container, bg='#f8f9fa')
         content_area.pack(fill='both', expand=True, padx=30, pady=20)
@@ -722,26 +849,151 @@ class 乘车体验对比分析GUI:
         # 底部状态栏
         self.create_status_bar(main_container)
     
+    def create_indicator_panel(self, parent):
+        """创建指标选择面板"""
+        # 面板容器 - 进一步增加高度
+        panel_container = tk.Frame(parent, bg='#34495e', height=220)  # 从180增加到220
+        panel_container.pack(fill='x', padx=0, pady=0)
+        panel_container.pack_propagate(False)
+        
+        # 面板标题 - 减少高度
+        title_frame = tk.Frame(panel_container, bg='#34495e', height=40)  # 从50减少到40
+        title_frame.pack(fill='x')
+        title_frame.pack_propagate(False)
+        
+        title_label = tk.Label(title_frame, text="🎯 选择分析指标", 
+                              font=('微软雅黑', 16, 'bold'), fg='white', bg='#34495e')  # 减小字体
+        title_label.pack(side='left', padx=20, pady=10)  # 减少padding
+        
+        # 全选/反选按钮
+        btn_frame = tk.Frame(title_frame, bg='#34495e')
+        btn_frame.pack(side='right', padx=20, pady=10)  # 减少padding
+        
+        select_all_indicators = tk.Button(btn_frame, text="✅ 全选", 
+                                         font=('微软雅黑', 9), bg='#27ae60', fg='white',
+                                         relief='flat', padx=12, pady=3, cursor='hand2',
+                                         command=self.select_all_indicators)
+        select_all_indicators.pack(side='right', padx=3)
+        
+        clear_all_indicators = tk.Button(btn_frame, text="❌ 清空", 
+                                        font=('微软雅黑', 9), bg='#e74c3c', fg='white',
+                                        relief='flat', padx=12, pady=3, cursor='hand2',
+                                        command=self.clear_all_indicators)
+        clear_all_indicators.pack(side='right', padx=3)
+        
+        # 指标选择区域 - 最大化可用空间
+        indicators_frame = tk.Frame(panel_container, bg='#34495e')
+        indicators_frame.pack(fill='both', expand=True, padx=20, pady=(0, 15))  # 减少左右padding
+        
+        # 创建两行指标布局
+        row1_frame = tk.Frame(indicators_frame, bg='#34495e')
+        row1_frame.pack(fill='x', pady=(0, 8))  # 减少行间距
+        
+        row2_frame = tk.Frame(indicators_frame, bg='#34495e')
+        row2_frame.pack(fill='x')
+        
+        # 第一行：当前可用指标
+        indicator_keys = list(self.available_indicators.keys())
+        for i, key in enumerate(indicator_keys[:3]):  # 前3个指标
+            self.create_indicator_checkbox(row1_frame, key, self.available_indicators[key])
+        
+        # 第二行：剩余指标和未来扩展
+        for i, key in enumerate(indicator_keys[3:]):  # 后2个指标
+            self.create_indicator_checkbox(row2_frame, key, self.available_indicators[key])
+        
+        # 未来扩展指标（灰色显示）
+        for key, indicator in self.future_indicators.items():
+            self.create_indicator_checkbox(row2_frame, key, indicator, disabled=True)
+    
+    def create_indicator_checkbox(self, parent, key, indicator, disabled=False):
+        """创建单个指标复选框 - 超紧凑版"""
+        # 指标卡片 - 最小化尺寸
+        card_frame = tk.Frame(parent, bg='#2c3e50' if not disabled else '#95a5a6', 
+                             relief='raised', bd=1)
+        card_frame.pack(side='left', fill='both', expand=True, padx=3)  # 减少间距
+        
+        # 复选框和标题 - 最小padding
+        checkbox_frame = tk.Frame(card_frame, bg='#2c3e50' if not disabled else '#95a5a6')
+        checkbox_frame.pack(fill='x', padx=8, pady=4)  # 最小padding
+        
+        # 复选框
+        checkbox = tk.Checkbutton(checkbox_frame, 
+                                 variable=indicator['enabled'],
+                                 bg='#2c3e50' if not disabled else '#95a5a6',
+                                 fg='white',
+                                 selectcolor='#3498db' if not disabled else '#7f8c8d',
+                                 activebackground='#2c3e50' if not disabled else '#95a5a6',
+                                 activeforeground='white',
+                                 font=('微软雅黑', 9),
+                                 state='normal' if not disabled else 'disabled',
+                                 command=self.on_indicator_change)
+        checkbox.pack(side='left')
+        
+        # 指标名称 - 更小字体
+        name_label = tk.Label(checkbox_frame, 
+                             text=f"{indicator['icon']} {indicator['name']}", 
+                             font=('微软雅黑', 10, 'bold'),
+                             fg='white' if not disabled else '#bdc3c7',
+                             bg='#2c3e50' if not disabled else '#95a5a6')
+        name_label.pack(side='left', padx=(3, 0))
+        
+        # 如果是未来指标，添加"敬请期待"标签
+        if disabled:
+            coming_soon = tk.Label(checkbox_frame, text="敬请期待", 
+                                  font=('微软雅黑', 7), fg='#ecf0f1', bg='#95a5a6')
+            coming_soon.pack(side='right')
+        
+        # 简化描述文本 - 单行显示
+        short_desc = indicator['description'][:15] + "..." if len(indicator['description']) > 15 else indicator['description']
+        desc_label = tk.Label(card_frame, text=short_desc, 
+                             font=('微软雅黑', 7),  # 更小字体
+                             fg='#ecf0f1' if not disabled else '#bdc3c7',
+                             bg='#2c3e50' if not disabled else '#95a5a6',
+                             height=1)  # 单行高度
+        desc_label.pack(padx=8, pady=(0, 4), anchor='w')  # 最小间距
+    
+    def select_all_indicators(self):
+        """全选所有可用指标"""
+        for key, indicator in self.available_indicators.items():
+            indicator['enabled'].set(True)
+        self.on_indicator_change()
+    
+    def clear_all_indicators(self):
+        """清空所有指标选择"""
+        for key, indicator in self.available_indicators.items():
+            indicator['enabled'].set(False)
+        self.on_indicator_change()
+    
+    def on_indicator_change(self):
+        """指标选择变化时的回调"""
+        selected_count = sum(1 for indicator in self.available_indicators.values() 
+                           if indicator['enabled'].get())
+        
+        if selected_count == 0:
+            self.update_status("⚠️ 请至少选择一个分析指标")
+        elif selected_count == 1:
+            self.update_status(f"📊 已选择 {selected_count} 个指标，建议选择多个指标以获得更全面的分析")
+        else:
+            self.update_status(f"✅ 已选择 {selected_count} 个指标，可以开始分析")
+    
+    def get_selected_indicators(self):
+        """获取用户选择的指标列表"""
+        selected = []
+        for key, indicator in self.available_indicators.items():
+            if indicator['enabled'].get():
+                selected.append(key)
+        return selected
+    
     def create_header(self, parent):
         """创建顶部标题栏"""
-        header = tk.Frame(parent, bg='#2c3e50', height=120)
+        header = tk.Frame(parent, bg='#2c3e50', height=80)  # 减少高度从120到80
         header.pack(fill='x')
         header.pack_propagate(False)
         
-        # 主标题
+        # 主标题 - 保持简洁
         title_label = tk.Label(header, text="🚗 乘车体验对比分析系统 - 中位数版", 
                               font=('微软雅黑', 24, 'bold'), fg='white', bg='#2c3e50')
-        title_label.pack(pady=10)
-        
-        # 副标题：算法说明
-        subtitle_label = tk.Label(header, text="基于评分函数中位数特性的稳健平衡因子算法", 
-                                 font=('微软雅黑', 14), fg='#ecf0f1', bg='#2c3e50')
-        subtitle_label.pack(pady=5)
-        
-        # 副标题
-        subtitle_label = tk.Label(header, text="智能分析 • 科学对比 • 直观展示", 
-                                 font=('微软雅黑', 16), fg='#ecf0f1', bg='#2c3e50')
-        subtitle_label.pack()
+        title_label.pack(pady=20)  # 增加上下间距，居中显示
     
     def create_mode_cards(self, parent):
         """创建两个分析模式的卡片"""
@@ -756,46 +1008,39 @@ class 乘车体验对比分析GUI:
         self.create_multi_mode_card(cards_frame)
     
     def create_single_mode_card(self, parent):
-        """创建单组对比模式卡片"""
+        """创建单组对比模式卡片 - 紧凑版"""
         # 左侧卡片框架
         left_card = tk.Frame(parent, bg='white', relief='raised', bd=2)
         left_card.pack(side='left', fill='both', expand=True, padx=(0, 15))
         
-        # 卡片标题
-        title_frame = tk.Frame(left_card, bg='#3498db', height=80)
+        # 卡片标题 - 减少高度
+        title_frame = tk.Frame(left_card, bg='#3498db', height=60)  # 从80减少到60
         title_frame.pack(fill='x')
         title_frame.pack_propagate(False)
         
         tk.Label(title_frame, text="🎯 单组精准对比", 
-                font=('微软雅黑', 20, 'bold'), fg='white', bg='#3498db').pack(pady=25)
+                font=('微软雅黑', 18, 'bold'), fg='white', bg='#3498db').pack(pady=18)  # 减少padding
         
-        # 卡片内容
-        content_frame = tk.Frame(left_card, bg='white', padx=30, pady=30)
+        # 卡片内容 - 减少padding
+        content_frame = tk.Frame(left_card, bg='white', padx=20, pady=15)  # 大幅减少padding
         content_frame.pack(fill='both', expand=True)
         
-        # 步骤指导
-        steps_text = """📋 操作步骤：
-1️⃣ 从下方列表选择要分析的数据组
-2️⃣ 点击 "开始单组对比" 按钮
-3️⃣ 查看详细的对比分析结果
-
-💡 适用场景：
-• 想了解某次具体出行的体验差异
-• 需要详细的单次对比数据
-• 分析特定条件下的表现"""
+        # 精简的步骤指导
+        steps_text = """📋 操作：选择数据组 → 开始分析
+💡 适用：单次出行详细对比"""
         
-        tk.Label(content_frame, text=steps_text, font=('微软雅黑', 11), 
+        tk.Label(content_frame, text=steps_text, font=('微软雅黑', 10), 
                 bg='white', justify='left', anchor='nw').pack(anchor='nw')
         
-        # 数据选择区域
+        # 数据选择区域 - 减少间距
         tk.Label(content_frame, text="📊 选择数据组：", 
-                font=('微软雅黑', 14, 'bold'), bg='white').pack(anchor='w', pady=(20, 10))
+                font=('微软雅黑', 12, 'bold'), bg='white').pack(anchor='w', pady=(10, 5))
         
-        # 数据列表框
+        # 数据列表框 - 减少高度
         listbox_frame = tk.Frame(content_frame, bg='white')
-        listbox_frame.pack(fill='x', pady=(0, 20))
+        listbox_frame.pack(fill='x', pady=(0, 10))
         
-        self.single_listbox = tk.Listbox(listbox_frame, height=8, font=('微软雅黑', 11),
+        self.single_listbox = tk.Listbox(listbox_frame, height=5, font=('微软雅黑', 10),  # 从8减少到5
                                         selectmode='single', bg='#f8f9fa', 
                                         selectbackground='#3498db', selectforeground='white')
         scrollbar1 = tk.Scrollbar(listbox_frame, orient="vertical", command=self.single_listbox.yview)
@@ -804,75 +1049,67 @@ class 乘车体验对比分析GUI:
         self.single_listbox.pack(side="left", fill="both", expand=True)
         scrollbar1.pack(side="right", fill="y")
         
-        # 开始分析按钮
+        # 开始分析按钮 - 减少尺寸
         start_btn1 = tk.Button(content_frame, text="🚀 开始单组对比", 
-                              font=('微软雅黑', 14, 'bold'), bg='#3498db', fg='white',
-                              relief='flat', padx=30, pady=10, cursor='hand2',
+                              font=('微软雅黑', 12, 'bold'), bg='#3498db', fg='white',
+                              relief='flat', padx=20, pady=8, cursor='hand2',
                               command=self.single_day_analysis)
         start_btn1.pack(anchor='w')
     
     def create_multi_mode_card(self, parent):
-        """创建多组对比模式卡片"""
+        """创建多组对比模式卡片 - 紧凑版"""
         # 右侧卡片框架
         right_card = tk.Frame(parent, bg='white', relief='raised', bd=2)
         right_card.pack(side='right', fill='both', expand=True, padx=(15, 0))
         
-        # 卡片标题
-        title_frame = tk.Frame(right_card, bg='#e74c3c', height=80)
+        # 卡片标题 - 减少高度
+        title_frame = tk.Frame(right_card, bg='#e74c3c', height=60)  # 从80减少到60
         title_frame.pack(fill='x')
         title_frame.pack_propagate(False)
         
         tk.Label(title_frame, text="📈 多组综合对比", 
-                font=('微软雅黑', 20, 'bold'), fg='white', bg='#e74c3c').pack(pady=25)
+                font=('微软雅黑', 18, 'bold'), fg='white', bg='#e74c3c').pack(pady=18)  # 减少padding
         
-        # 卡片内容
-        content_frame = tk.Frame(right_card, bg='white', padx=30, pady=30)
+        # 卡片内容 - 减少padding
+        content_frame = tk.Frame(right_card, bg='white', padx=20, pady=15)  # 大幅减少padding
         content_frame.pack(fill='both', expand=True)
         
-        # 步骤指导
-        steps_text = """📋 操作步骤：
-1️⃣ 勾选下方要包含在分析中的数据组
-2️⃣ 至少选择2组数据（建议3组以上）
-3️⃣ 点击 "开始多组对比" 按钮
-4️⃣ 获得统计学意义的综合结论
-
-💡 适用场景：
-• 想了解整体期间的综合表现
-• 需要统计学意义的结论
-• 分析长期使用体验差异"""
+        # 精简的步骤指导
+        steps_text = """📋 操作：勾选数据组(≥2组) → 开始分析
+💡 适用：统计学意义的综合结论"""
         
-        tk.Label(content_frame, text=steps_text, font=('微软雅黑', 11), 
+        tk.Label(content_frame, text=steps_text, font=('微软雅黑', 10), 
                 bg='white', justify='left', anchor='nw').pack(anchor='nw')
         
-        # 数据选择区域
+        # 数据选择区域 - 减少间距
         select_frame = tk.Frame(content_frame, bg='white')
-        select_frame.pack(fill='both', expand=True, pady=(20, 0))
+        select_frame.pack(fill='both', expand=True, pady=(10, 0))
         
-        # 选择标题和全选按钮
+        # 选择标题和全选按钮 - 减少间距
         select_header = tk.Frame(select_frame, bg='white')
-        select_header.pack(fill='x', pady=(0, 10))
+        select_header.pack(fill='x', pady=(0, 5))
         
         tk.Label(select_header, text="📊 选择数据组：", 
-                font=('微软雅黑', 14, 'bold'), bg='white').pack(side='left')
+                font=('微软雅黑', 12, 'bold'), bg='white').pack(side='left')
         
         select_all_btn = tk.Button(select_header, text="全选", 
-                                  font=('微软雅黑', 10), bg='#f39c12', fg='white',
-                                  relief='flat', padx=15, pady=2, cursor='hand2',
+                                  font=('微软雅黑', 9), bg='#f39c12', fg='white',
+                                  relief='flat', padx=12, pady=1, cursor='hand2',
                                   command=self.select_all_data)
         select_all_btn.pack(side='right')
         
         clear_all_btn = tk.Button(select_header, text="清空", 
-                                 font=('微软雅黑', 10), bg='#95a5a6', fg='white',
-                                 relief='flat', padx=15, pady=2, cursor='hand2',
+                                 font=('微软雅黑', 9), bg='#95a5a6', fg='white',
+                                 relief='flat', padx=12, pady=1, cursor='hand2',
                                  command=self.clear_all_data)
-        clear_all_btn.pack(side='right', padx=(0, 10))
+        clear_all_btn.pack(side='right', padx=(0, 8))
         
-        # 复选框容器
+        # 复选框容器 - 减少高度
         checkbox_container = tk.Frame(select_frame, bg='white')
         checkbox_container.pack(fill='both', expand=True)
         
-        # 滚动框架
-        canvas = tk.Canvas(checkbox_container, bg='#f8f9fa', height=200)
+        # 滚动框架 - 大幅减少高度
+        canvas = tk.Canvas(checkbox_container, bg='#f8f9fa', height=120)  # 从200减少到120
         scrollbar2 = tk.Scrollbar(checkbox_container, orient="vertical", command=canvas.yview)
         self.checkboxes_frame = tk.Frame(canvas, bg='#f8f9fa')
         
@@ -887,12 +1124,12 @@ class 乘车体验对比分析GUI:
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar2.pack(side="right", fill="y")
         
-        # 开始分析按钮
+        # 开始分析按钮 - 减少尺寸和间距
         start_btn2 = tk.Button(content_frame, text="🚀 开始多组对比", 
-                              font=('微软雅黑', 14, 'bold'), bg='#e74c3c', fg='white',
-                              relief='flat', padx=30, pady=10, cursor='hand2',
+                              font=('微软雅黑', 12, 'bold'), bg='#e74c3c', fg='white',
+                              relief='flat', padx=20, pady=8, cursor='hand2',
                               command=self.multi_day_analysis)
-        start_btn2.pack(anchor='w', pady=(20, 0))
+        start_btn2.pack(anchor='w', pady=(10, 0))  # 减少间距
         
         # 初始化复选框变量
         self.date_vars = {}
@@ -970,32 +1207,50 @@ class 乘车体验对比分析GUI:
             self.update_status("⚠️ 未发现配对数据 | 请检查数据文件")
     
     def single_day_analysis(self):
-        """执行单组分析"""
-        selection = self.single_listbox.curselection()
-        if not selection:
-            messagebox.showwarning("选择提示", "请先选择要分析的数据组！")
+        """单日对比分析，支持动态指标选择"""
+        selected = self.single_listbox.curselection()
+        if not selected:
+            messagebox.showwarning("提示", "请先选择要分析的数据组！")
             return
         
-        groups = list(self.analysis_system.paired_data.keys())
-        selected_group = groups[selection[0]]
+        # 获取选中的指标
+        selected_indicators = self.get_selected_indicators()
+        if not selected_indicators:
+            messagebox.showwarning("提示", "请至少选择一个分析指标！")
+            return
         
-        self.update_status("🔄 正在进行单组精准对比分析...")
+        # 从显示文本中提取组名
+        display_text = self.single_listbox.get(selected[0])
+        # 获取组名列表
+        group_names = list(self.analysis_system.paired_data.keys())
+        group_name = group_names[selected[0]]  # 使用索引获取实际组名
         
-        # 创建结果窗口
-        self.create_result_window("单组精准对比", lambda: self.analysis_system.single_group_comparison(selected_group))
+        def analysis_func():
+            return self.analysis_system.single_group_comparison(group_name, selected_indicators)
+        
+        self.create_result_window(f"单组对比分析 - {group_name}", analysis_func)
     
     def multi_day_analysis(self):
-        """执行多组分析"""
-        selected_groups = [group for group, var in self.date_vars.items() if var.get()]
+        """多日综合分析，支持动态指标选择"""
+        selected_groups = []
+        for group_name, var in self.date_vars.items():
+            if var.get():
+                selected_groups.append(group_name)
         
         if len(selected_groups) < 2:
-            messagebox.showwarning("选择提示", "多组分析至少需要选择2组数据！\n建议选择3组以上获得更可靠的结果。")
+            messagebox.showwarning("提示", "请至少选择2组数据进行综合分析！")
             return
         
-        self.update_status(f"🔄 正在分析 {len(selected_groups)} 组数据...")
+        # 获取选中的指标
+        selected_indicators = self.get_selected_indicators()
+        if not selected_indicators:
+            messagebox.showwarning("提示", "请至少选择一个分析指标！")
+            return
         
-        # 创建结果窗口
-        self.create_result_window("多组综合对比", lambda: self.analysis_system.multi_group_comparison(selected_groups))
+        def analysis_func():
+            return self.analysis_system.multi_group_comparison(selected_groups, selected_indicators)
+        
+        self.create_result_window(f"多组综合分析 ({len(selected_groups)}组数据)", analysis_func)
     
     def create_result_window(self, title, analysis_func):
         """创建结果显示窗口"""
